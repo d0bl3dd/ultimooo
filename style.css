@@ -1,0 +1,293 @@
+/* =============================================================
+   DIBUJA Y ADIVINA — tema "pizarrón de juego"
+   Un tablero oscuro con tizas de colores alrededor de una hoja
+   de papel real donde se dibuja. La tipografía de marcador y
+   los bordes punteados vienen del objeto físico que imita: un
+   pizarrón de juegos familiares, no una app corporativa.
+   ============================================================= */
+
+:root{
+  /* Chrome del pizarrón */
+  --board:        #16211b;
+  --board-raised: #1d2e25;
+  --board-line:   rgba(243, 239, 224, 0.16);
+  --board-line-strong: rgba(243, 239, 224, 0.32);
+
+  /* Texto tipo tiza */
+  --chalk:      #f4efe1;
+  --chalk-dim:  rgba(244, 239, 225, 0.62);
+  --chalk-faint:rgba(244, 239, 225, 0.4);
+
+  /* Tizas de colores (acentos) */
+  --coral:   #ff6f59;
+  --coral-ink: #3d1710;
+  --sky:     #5fc6dc;
+  --sky-ink: #0b2f36;
+  --yellow:  #ffc94d;
+  --yellow-ink: #3d2c03;
+  --mint:    #78d6a0;
+  --mint-ink:#0d3321;
+
+  /* La hoja de papel donde se dibuja de verdad */
+  --paper:      #faf3e2;
+  --paper-edge: #e4d6ae;
+
+  --radius-card: 14px;
+  --radius-pill: 999px;
+  color-scheme: dark;
+}
+
+*{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body{ height: 100%; }
+
+body{
+  margin:0;
+  background: var(--board);
+  background-image:
+    radial-gradient(ellipse at 15% -10%, rgba(255,111,89,0.10), transparent 45%),
+    radial-gradient(ellipse at 100% 0%, rgba(95,198,220,0.10), transparent 40%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 34px);
+  color: var(--chalk);
+  font-family: "Nunito", system-ui, -apple-system, sans-serif;
+  min-height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow-x: hidden;
+}
+
+#app{
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display:flex;
+  flex-direction: column;
+  padding: 22px 18px 30px;
+}
+
+.screen{ display:none; flex:1; flex-direction:column; }
+.screen.active{ display:flex; }
+.screen-center{ justify-content:center; }
+
+h1,h2{ font-family: "Permanent Marker", cursive; font-weight:400; margin:0; line-height:1.15; }
+
+/* ---------- Encabezado de la pantalla de inicio ---------- */
+.board-header{ text-align:center; margin-bottom: 22px; position:relative; }
+.wordmark{
+  font-size: 40px;
+  color: var(--chalk);
+  text-shadow: 3px 3px 0 var(--coral-ink), 0 0 22px rgba(255,111,89,0.25);
+  transform: rotate(-1.5deg);
+}
+.tagline{
+  margin: 10px 0 0;
+  color: var(--chalk-dim);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ---------- Tarjetas tipo "recuadro de tiza" ---------- */
+.card{
+  --accent: var(--coral);
+  background: var(--board-raised);
+  border: 2px dashed var(--board-line-strong);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.card-head{ display:flex; align-items:center; gap:9px; margin-bottom: 6px; }
+.card-dot{
+  width:10px; height:10px; border-radius:50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  flex:none;
+}
+.card h2{ font-size: 19px; color: var(--chalk); }
+.muted{ color: var(--chalk-dim); font-size: 13.5px; line-height:1.45; margin: 2px 0 12px; }
+.field-hint{ color: var(--chalk-faint); font-size: 12.5px; font-weight:700; margin: 0 0 10px; }
+
+/* ---------- Botones ---------- */
+button{ font-family: inherit; cursor:pointer; }
+.btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  padding: 13px 18px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--chalk);
+  color: var(--board);
+  font-size: 16px;
+  font-weight:800;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.35);
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.btn:active{ transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+.btn-primary{ background: var(--coral); color: var(--coral-ink); }
+.btn-accent{ background: var(--sky); color: var(--sky-ink); }
+.btn-ghost{ background: transparent; color: var(--chalk-dim); box-shadow:none; border: 2px dashed var(--board-line-strong); }
+.btn-sm{ padding: 9px 14px; font-size: 13.5px; width:auto; }
+.btn-big{ font-size: 18px; padding: 17px; margin-top: 4px; }
+.btn-wide{ max-width: 280px; }
+.btn[disabled]{ opacity:.4; pointer-events:none; }
+
+/* ---------- Chips de configuración ---------- */
+.chip-group{ display:flex; flex-wrap:wrap; gap:9px; }
+.chip{
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--board-line-strong);
+  background: transparent;
+  color: var(--chalk-dim);
+  font-size: 14px;
+  font-weight:800;
+}
+.chip.selected{
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--board);
+}
+
+.players-row{ display:flex; align-items:center; gap:10px; }
+.players-row input{
+  flex:1;
+  min-width:0;
+  padding: 11px 12px;
+  border-radius: 8px;
+  border: 2px solid var(--board-line-strong);
+  font-size: 15px;
+  font-weight:700;
+  font-family: inherit;
+  background: rgba(244,239,225,0.06);
+  color: var(--chalk);
+}
+.players-row input::placeholder{ color: var(--chalk-faint); }
+.players-row .vs{ font-family:"Permanent Marker",cursive; color: var(--coral); font-size:14px; flex:none; }
+
+.cat-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:9px; }
+.cat-chip{
+  padding: 11px 8px;
+  border-radius: 9px;
+  border: 2px solid var(--board-line-strong);
+  background: transparent;
+  color: var(--chalk-dim);
+  font-size: 13px;
+  font-weight:700;
+  text-align:center;
+}
+.cat-chip.selected{ background: var(--mint); border-color: var(--mint); color: var(--mint-ink); }
+
+/* ---------- Pantallas centradas (pasar teléfono, ronda, ganador) ---------- */
+.pass-wrap, .winner-wrap{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:16px;
+}
+.turn-badge{
+  font-size: 12px; font-weight:800; letter-spacing: 0.3px;
+  background: var(--board-raised); border: 2px dashed var(--board-line-strong);
+  color: var(--chalk-dim); padding: 6px 14px; border-radius: var(--radius-pill);
+}
+.hidden{ display:none !important; }
+.result-banner{
+  font-size: 13.5px; font-weight:700; color: var(--chalk);
+  background: var(--board-raised); border: 2px dashed var(--board-line-strong);
+  padding: 9px 16px; border-radius: var(--radius-pill);
+  margin-bottom: 2px;
+}
+#stepReady, #stepReveal{
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+}
+.pass-icon{ font-size: 54px; }
+.pass-wrap h2{ font-size: 24px; color: var(--chalk); }
+.pass-name{ color: var(--coral); }
+.score-pill{
+  display:inline-flex; gap:14px; padding:11px 20px; border-radius:var(--radius-pill);
+  border: 2px solid var(--board-line-strong); background: var(--board-raised);
+  font-weight:800; font-size:14px; color: var(--chalk);
+}
+
+/* ---------- Pantalla de dibujar / adivinar ---------- */
+.game-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; gap:10px; }
+.turn-tag{
+  font-size: 12.5px; font-weight:800; background: var(--sky); color: var(--sky-ink);
+  padding:7px 14px; border-radius: var(--radius-pill);
+}
+.timer{
+  font-family: "Permanent Marker", cursive;
+  font-size: 26px;
+  min-width: 58px;
+  text-align:center;
+  color: var(--chalk);
+}
+.timer.warn{ color: var(--coral); }
+
+.word-banner{
+  background: var(--board-raised);
+  border: 2px dashed var(--board-line-strong);
+  color: var(--chalk);
+  border-radius: 10px;
+  padding: 12px 14px;
+  text-align:center;
+  margin-bottom: 10px;
+  font-size: 19px;
+  font-weight:800;
+  letter-spacing: 0.3px;
+  word-break: break-word;
+}
+.word-banner-lg{ font-size: 25px; padding: 22px; margin: 4px 0; }
+.cat-label{ display:block; font-size:12px; font-weight:700; opacity:.7; margin-bottom:5px; }
+
+/* Durante el dibujo, la palabra NO se muestra: ambos jugadores están
+   mirando la misma pantalla, así que mostrarla arrruinaría el juego.
+   Solo se ve la categoría, como en el juego de mesa original. */
+.word-banner-hidden{ font-size: 15px; font-weight:700; }
+.hidden-word-hint{ display:block; opacity:.8; }
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+
+/* El lienzo es una HOJA DE PAPEL real — contraste deliberado con el resto oscuro */
+.canvas-wrap{
+  position:relative;
+  background: var(--paper);
+  border: 3px solid var(--paper-edge);
+  border-radius: var(--radius-card);
+  box-shadow: 0 6px 0 rgba(0,0,0,0.35), inset 0 0 0 1px rgba(0,0,0,0.04);
+  overflow:hidden;
+  touch-action:none;
+  flex: 1 1 auto;
+  min-height: 260px;
+  margin-bottom: 12px;
+}
+#board{ width:100%; height:100%; display:block; touch-action:none; }
+
+.tools{ display:flex; align-items:center; gap:10px; margin-bottom: 12px; flex-wrap:wrap; }
+.swatches{ display:flex; gap:7px; }
+.swatch{
+  width: 28px; height: 28px; border-radius:50%; border:2px solid var(--board-line-strong);
+  padding:0; flex:none;
+}
+.swatch.selected{ box-shadow: 0 0 0 3px var(--board), 0 0 0 5px var(--chalk); }
+.tool-actions{ display:flex; gap:8px; margin-left:auto; }
+.tool-btn{
+  width:38px; height:38px; border-radius:50%; border:2px solid var(--board-line-strong);
+  background: var(--board-raised); font-size:16px; display:flex; align-items:center; justify-content:center; flex:none;
+}
+.tool-btn.selected{ background: var(--yellow); border-color: var(--yellow); }
+.size-range{ flex:1; min-width: 60px; accent-color: var(--coral); }
+
+.guess-row{ display:flex; gap:10px; }
+
+/* ---------- Ganador ---------- */
+.winner-wrap .trophy{ font-size: 68px; }
+.winner-wrap h1{ font-size: 28px; color: var(--yellow); text-shadow: 2px 2px 0 var(--yellow-ink); }
+
+footer{ text-align:center; font-size: 11.5px; color: var(--chalk-faint); margin-top: 12px; }
+
+@media (max-height: 640px){
+  .canvas-wrap{ min-height: 200px; }
+  .wordmark{ font-size: 32px; }
+}
